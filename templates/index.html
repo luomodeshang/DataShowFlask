@@ -3,10 +3,166 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DataShowFlask</title>
+<title>博科 · 数据平台</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body {
+  background: #0a0e17;
+  color: #e0e8f0;
+  font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, sans-serif;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* scan-line overlay */
+.scanline {
+  position:fixed; top:0; left:0; right:0; height:2px;
+  background:rgba(0,212,255,0.03);
+  pointer-events:none; z-index:9999;
+  animation:scan 8s linear infinite;
+}
+@keyframes scan {
+  0% { transform:translateY(-100%); }
+  100% { transform:translateY(100vh); }
+}
+
+.container {
+  text-align:center;
+  z-index:1;
+}
+
+.logo {
+  font-size:3rem; font-weight:700;
+  letter-spacing:12px;
+  background: linear-gradient(90deg, #00d4ff, #0088ff, #00d4ff);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation: shimmer 3s ease infinite;
+  margin-bottom:20px;
+}
+@keyframes shimmer {
+  0% { background-position:0% center; }
+  50% { background-position:100% center; }
+  100% { background-position:0% center; }
+}
+
+.subtitle {
+  color:#475569;
+  font-size:0.9rem;
+  letter-spacing:4px;
+  margin-bottom:50px;
+}
+
+.card-grid {
+  display:flex;
+  gap:24px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+.card {
+  width:240px;
+  padding:32px 24px;
+  background: linear-gradient(135deg, #0f1729 0%, #1a2744 100%);
+  border:1px solid #1e3a5f;
+  border-radius:12px;
+  cursor:pointer;
+  transition:all 0.4s;
+  text-decoration:none;
+  color:inherit;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+}
+
+.card:hover {
+  border-color:#00d4ff;
+  transform:translateY(-6px);
+  box-shadow:0 12px 40px rgba(0,212,255,0.12);
+}
+
+.card-icon {
+  width:64px; height:64px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem;
+}
+
+.card-icon.blue { background:rgba(0,136,255,0.15); }
+.card-icon.purple { background:rgba(139,92,246,0.15); }
+
+.card-title {
+  font-size:1.1rem;
+  font-weight:600;
+  color:#e0e8f0;
+}
+
+.card-desc {
+  font-size:0.8rem;
+  color:#64748b;
+  line-height:1.5;
+}
+
+.status-dot {
+  display:inline-block;
+  width:8px; height:8px;
+  border-radius:50%;
+  background:#10b981;
+  margin-right:6px;
+  animation:pulse 2s ease infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; }
+  50% { opacity:0.4; }
+}
+
+.footer {
+  margin-top:50px;
+  font-size:0.75rem;
+  color:#2a3a5c;
+  letter-spacing:3px;
+}
+
+/* 底部装饰线 */
+.container::after {
+  content:'';
+  position:fixed;
+  bottom:0; left:0; right:0;
+  height:2px;
+  background:linear-gradient(90deg, transparent 0%, #00d4ff 30%, #8b5cf6 70%, transparent 100%);
+  opacity:0.4;
+}
+</style>
 </head>
 <body>
-<h1>DataShowFlask 数据展示平台</h1>
-<p><a href="/preprocess">进入数据预处理平台</a></p>
+
+<div class="scanline"></div>
+
+<div class="container">
+  <div class="logo">博 科</div>
+  <div class="subtitle">工 业 数 据 平 台</div>
+
+  <div class="card-grid">
+    <a href="/preprocess" class="card">
+      <div class="card-icon blue">📊</div>
+      <div class="card-title">数据预处理</div>
+      <div class="card-desc">导入 · 清洗 · 归一化 · 导出<br>一站式数据质量治理</div>
+    </a>
+
+    <a href="#" class="card" onclick="alert('即将上线')" style="opacity:0.6">
+      <div class="card-icon purple">📈</div>
+      <div class="card-title">数据可视化</div>
+      <div class="card-desc">大屏看板 · 实时监控<br>图表分析 · 趋势预测</div>
+    </a>
+  </div>
+
+  <div class="footer">
+    <span class="status-dot"></span>
+    系统运行中 &nbsp;·&nbsp; v2.0
+  </div>
+</div>
+
 </body>
 </html>

@@ -437,6 +437,16 @@ def index():
     """主页"""
     return render_template('index.html')
 
+@app.route('/preprocess')
+def preprocess():
+    """数据预处理平台"""
+    return render_template('preprocess.html')
+
+@app.route('/data/<path:filename>')
+def serve_data(filename):
+    from flask import send_from_directory
+    return send_from_directory('data', filename)
+
 @app.route('/maintenance')
 def maintenance():
     """运维界面"""
