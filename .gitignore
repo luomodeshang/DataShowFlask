@@ -20,3 +20,10 @@ Thumbs.db
 # Flask
 instance/
 *.db
+
+# 大文件
+*.gltf
+*.glb
+
+# 模型文件
+trained_models/
