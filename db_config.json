@@ -1,0 +1,10 @@
+{
+  "server": "DESKTOP-G76SVIK",
+  "database": "DataAnalysis",
+  "original_database": "DataAnalysis",
+  "cleaned_database": "DataAnalysis",
+  "table_original": "BK_DataModel",
+  "table_cleaned": "Cleaned_Data",
+  "driver": "ODBC Driver 17 for SQL Server",
+  "trusted_connection": true
+}
