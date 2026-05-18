@@ -1,0 +1,103 @@
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-bg: #ffffff;
+  --color-bg-alt: #f8fafc;
+  --color-text: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-border: #e2e8f0;
+  --color-card-bg: #ffffff;
+  --max-width: 1200px;
+  --navbar-height: 64px;
+  --radius: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --transition: 0.2s ease;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+.container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+/* Navbar */
+.navbar {
+  position: sticky; top: 0; z-index: 100;
+  height: var(--navbar-height);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+}
+.navbar__inner { display: flex; align-items: center; justify-content: space-between; height: 100%; }
+.navbar__brand { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 1.125rem; }
+.navbar__logo { font-size: 1.5rem; }
+.navbar__menu { display: flex; gap: 8px; }
+.navbar__link {
+  display: block; padding: 8px 16px; border-radius: 8px;
+  font-size: 0.875rem; font-weight: 500; color: var(--color-text-secondary);
+  transition: all var(--transition);
+}
+.navbar__link:hover { color: var(--color-primary); background: var(--color-bg-alt); }
+.navbar__link.active { color: var(--color-primary); background: rgba(37,99,235,0.08); }
+
+/* Hero */
+.hero {
+  padding: 80px 0 64px; text-align: center;
+  background: linear-gradient(180deg, #eff6ff 0%, var(--color-bg) 100%);
+}
+.hero__title { font-size: 3rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+.hero__subtitle { font-size: 1.25rem; color: var(--color-text-secondary); margin-bottom: 16px; }
+.hero__desc { font-size: 1rem; color: var(--color-text-secondary); max-width: 560px; margin: 0 auto 32px; line-height: 1.7; }
+.hero__actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 28px; border-radius: 8px; font-size: 0.9375rem; font-weight: 600;
+  cursor: pointer; transition: all var(--transition); border: 2px solid transparent;
+}
+.btn--primary { background: var(--color-primary); color: #fff; }
+.btn--primary:hover { background: var(--color-primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn--outline { background: transparent; color: var(--color-primary); border-color: var(--color-primary); }
+.btn--outline:hover { background: rgba(37,99,235,0.06); }
+
+/* Section */
+.section { padding: 64px 0; }
+.section__title {
+  font-size: 1.75rem; font-weight: 700; text-align: center; margin-bottom: 48px;
+  letter-spacing: -0.01em;
+}
+
+/* Features Grid */
+.features__grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;
+}
+.card {
+  background: var(--color-card-bg); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: 32px 24px; text-align: center;
+  transition: all var(--transition);
+}
+.card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.card__icon { font-size: 2.5rem; margin-bottom: 16px; }
+.card__title { font-size: 1.125rem; font-weight: 600; margin-bottom: 8px; }
+.card__desc { font-size: 0.875rem; color: var(--color-text-secondary); line-height: 1.6; }
+
+/* Footer */
+.footer {
+  border-top: 1px solid var(--color-border); padding: 24px 0; text-align: center;
+}
+.footer__copyright { font-size: 0.8125rem; color: var(--color-text-secondary); }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hero { padding: 48px 0 40px; }
+  .hero__title { font-size: 2rem; }
+  .hero__subtitle { font-size: 1rem; }
+  .section { padding: 40px 0; }
+  .section__title { font-size: 1.375rem; margin-bottom: 32px; }
+  .features__grid { grid-template-columns: 1fr; }
+  .navbar__menu { gap: 4px; }
+  .navbar__link { padding: 6px 10px; font-size: 0.8125rem; }
+}

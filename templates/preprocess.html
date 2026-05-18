@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>博科 · 数据质量监控平台</title>
+<style>
+/* ===== 全局样式 ===== */
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body {
+  background: #0a0e17;
+  color: #e0e8f0;
+  font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, sans-serif;
+}
+/* 滚动条 */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:#111827; }
+::-webkit-scrollbar-thumb { background:#2a3a5c; border-radius:3px; }
+::-webkit-scrollbar-corner { background:#111827; }
+
+/* ===== 整体三层布局 ===== */
+.app { height:100vh; display:flex; flex-direction:column; }
+
+/* ===== 顶部栏 ===== */
+.top-bar {
+  height:60px; min-height:60px;
+  display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, #0f1729 0%, #1a2744 100%);
+  border-bottom:1px solid #1e3a5f;
+  position:relative; z-index:10;
+}
+.top-bar h1 {
+  font-size:1.5rem; font-weight:700;
+  letter-spacing:8px;
+  background: linear-gradient(90deg, #00d4ff, #0088ff, #00d4ff);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation: shimmer 3s ease infinite;
+}
+@keyframes shimmer {
+  0% { background-position:0% center; }
+  50% { background-position:100% center; }
+  100% { background-position:0% center; }
+}
+/* 顶部装饰指示灯 */
+.top-bar::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, transparent 0%, #00d4ff 50%, transparent 100%);
+  opacity:0.6;
+}
+
+/* ===== 中间内容区 ===== */
+.mid-area {
+  flex:1; display:flex; overflow:hidden;
+  background: #0d111d;
+}
+
+/* ===== 左侧面板 ===== */
+.left-panel {
+  width:200px; min-width:200px;
+  background: #0f1729;
+  border-right:1px solid #1e3a5f;
+  display:flex; flex-direction:column; align-items:center; padding:16px 0;
+}
+.dataset-selector {
+  width:170px; margin-bottom:20px;
+}
+.dataset-selector label {
+  display:block; font-size:0.75rem; color:#64748b; margin-bottom:6px;
+  text-align:center; letter-spacing:1px;
+}
+.dataset-selector select {
+  width:100%; padding:8px 12px;
+  background:#1a2236; color:#e0e8f0; border:1px solid #2a3a5c;
+  border-radius:6px; font-size:0.85rem; cursor:pointer;
+  outline:none; transition:border-color 0.3s;
+}
+.dataset-selector select:hover { border-color:#00d4ff; }
+.dataset-selector select:focus { border-color:#0088ff; box-shadow:0 0 8px rgba(0,136,255,0.3); }
+
+.btn-group { display:flex; flex-direction:column; gap:10px; width:170px; }
+.btn {
+  width:100%; padding:12px 0;
+  background:linear-gradient(135deg, #1a2236, #1e2a45);
+  border:1px solid #2a3a5c; border-radius:8px;
+  color:#94a3b8; font-size:0.85rem; cursor:pointer;
+  transition:all 0.3s; text-align:center; letter-spacing:1px;
+  position:relative; overflow:hidden;
+}
+.btn:hover {
+  border-color:#00d4ff; color:#fff;
+  box-shadow:0 0 15px rgba(0,212,255,0.15);
+  transform:translateX(2px);
+}
+.btn::before {
+  content:''; position:absolute; left:0; top:0; width:3px; height:100%;
+  background:#00d4ff; transform:scaleY(0); transition:transform 0.3s;
+}
+.btn:hover::before { transform:scaleY(1); }
+.btn:active { transform:scale(0.97); }
+
+/* 各按钮颜色主题 */
+.btn-import { border-left:3px solid #3b82f6; }
+.btn-dup { border-left:3px solid #f59e0b; }    /* 橙色 */
+.btn-miss { border-left:3px solid #10b981; }   /* 绿色 */
+.btn-outlier { border-left:3px solid #3b82f6; } /* 蓝色 */
+.btn-export { border-left:3px solid #8b5cf6; }
+
+/* 普通功能按钮统一样式 */
+.btn-normal { border-left:3px solid #3b82f6; }
+.btn-normal.active { background:rgba(59,130,246,0.15); border-color:#3b82f6; color:#60a5fa; }
+/* 导入突出青色 */
+.btn-import:hover:focus { border-color:#22d3ee; box-shadow:0 0 15px rgba(34,211,238,0.2); }
+/* 导出突出紫色，disabled变灰 */
+.btn-export:disabled {
+  opacity:0.4; cursor:not-allowed; transform:none;
+  background:#1a2236; border-color:#1e3a5f; color:#475569;
+}
+.btn-export:disabled::before { display:none; }
+.btn:disabled {
+  opacity:0.4; cursor:not-allowed; transform:none;
+}
+
+.btn-dup.active { background:rgba(245,158,11,0.15); border-color:#f59e0b; color:#fbbf24; }
+.btn-miss.active { background:rgba(16,185,129,0.15); border-color:#10b981; color:#34d399; }
+.btn-outlier.active { background:rgba(59,130,246,0.15); border-color:#3b82f6; color:#60a5fa; }
+
+/* ===== 中间表格区 ===== */
+.center-panel {
+  flex:1; display:flex; flex-direction:column; overflow:hidden;
+  background:#0d111d;
+}
+
+.table-toolbar {
+  height:44px; min-height:44px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; background:#111827; border-bottom:1px solid #1e3a5f;
+}
+.table-toolbar .info {
+  font-size:0.8rem; color:#64748b;
+}
+.table-toolbar .info span { color:#00d4ff; }
+.toggle-scroll {
+  padding:6px 16px; border-radius:6px; font-size:0.8rem; cursor:pointer;
+  background:#1a2236; color:#64748b; border:1px solid #2a3a5c;
+  transition:all 0.3s;
+}
+.toggle-scroll:hover { border-color:#00d4ff; color:#fff; }
+.toggle-scroll.running { background:rgba(0,212,255,0.1); border-color:#00d4ff; color:#00d4ff; }
+
+.table-wrapper {
+  flex:1; overflow:auto; position:relative;
+}
+table {
+  border-collapse:collapse; font-size:0.78rem; width:max-content;
+}
+thead { position:sticky; top:0; z-index:2; }
+th {
+  background:#1a2744; padding:6px 10px; white-space:nowrap;
+  border:1px solid #1e3a5f; color:#94a3b8; font-weight:600;
+  text-align:center;
+}
+th:first-child {
+  position:sticky; left:0; z-index:3;
+  background:#1a2744;
+}
+td {
+  padding:5px 10px; white-space:nowrap; text-align:right;
+  border:1px solid #1a2236; font-family:'Consolas','Courier New',monospace;
+  transition:background 0.4s;
+}
+/* 行索引列粘性 */
+td:first-child {
+  position:sticky; left:0; z-index:1;
+  background:#111827; color:#64748b;
+  text-align:center; font-weight:500;
+}
+/* 行悬停 */
+tr:hover td { background:rgba(30,58,95,0.5); }
+tr:hover td:first-child { background:#1a2744; }
+
+/* 初始异常（未处理）标红 */
+td.initial-anomaly { background:rgba(239,68,68,0.25) !important; color:#fca5a5; }
+tr.initial-anomaly td:not(:first-child) { background:rgba(239,68,68,0.25) !important; color:#fca5a5; }
+tr.initial-anomaly:hover td:not(:first-child) { background:rgba(239,68,68,0.35) !important; }
+/* 缺失值绿色（处理后） */
+td.missing { background:rgba(16,185,129,0.25) !important; color:#6ee7b7; }
+/* 重复值橙色 */
+td.duplicate { background:rgba(245,158,11,0.2) !important; }
+tr.duplicate-row td { background:rgba(245,158,11,0.12); }
+tr.duplicate-row:hover td { background:rgba(245,158,11,0.2); }
+
+/* ===== 右侧面板 ===== */
+.right-panel {
+  width:360px; min-width:360px;
+  background:#0f1729; border-left:1px solid #1e3a5f;
+  display:flex; flex-direction:column; padding:16px;
+}
+.right-panel h3 {
+  font-size:0.9rem; color:#64748b; margin-bottom:12px;
+  text-align:center; letter-spacing:2px;
+  border-bottom:1px solid #1e3a5f; padding-bottom:8px;
+}
+.chart-section {
+  flex:1; display:flex; flex-direction:column; gap:12px;
+  overflow-y:auto;
+}
+.chart-box {
+  flex:1; min-height:0;
+  background:#111827; border:1px solid #1e3a5f; border-radius:8px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  overflow:hidden; position:relative;
+  padding:8px;
+}
+.chart-box canvas { width:100%; height:100%; }
+#chartNoise { flex:1.5; }
+.chart-box .placeholder {
+  color:#2a3a5c; font-size:0.85rem; text-align:center;
+  line-height:1.6;
+}
+
+/* ===== 底部栏 ===== */
+.bottom-bar {
+  height:44px; min-height:44px;
+  display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, #0f1729 0%, #1a2744 100%);
+  border-top:1px solid #1e3a5f;
+}
+.bottom-bar span {
+  font-size:0.85rem; color:#475569;
+  letter-spacing:6px;
+}
+
+/* ===== 动画 ===== */
+@keyframes scanline {
+  0% { transform:translateY(-100%); }
+  100% { transform:translateY(100vh); }
+}
+.scanline-overlay {
+  position:fixed; top:0; left:0; right:0; height:2px;
+  background:rgba(0,212,255,0.03);
+  pointer-events:none; z-index:9999;
+  animation:scanline 8s linear infinite;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width:1200px) {
+  .right-panel { width:280px; min-width:280px; }
+}
+@media (max-width:900px) {
+  .mid-area { flex-direction:column; }
+  .left-panel { width:100%; min-width:0; flex-direction:row; flex-wrap:wrap; padding:10px; border-right:none; border-bottom:1px solid #1e3a5f; }
+  .dataset-selector { width:auto; margin-bottom:0; }
+  .btn-group { flex-direction:row; flex-wrap:wrap; }
+  .btn { width:auto; padding:8px 14px; }
+  .right-panel { width:100%; min-width:0; height:280px; border-left:none; border-top:1px solid #1e3a5f; }
+}
+</style>
+</head>
+<body>
+
+<div class="scanline-overlay"></div>
+
+<div class="app">
+
+  <!-- ===== 顶部 ===== -->
+  <header class="top-bar">
+    <h1>博 科</h1>
+  </header>
+
+  <!-- ===== 中间 ===== -->
+  <div class="mid-area">
+
+    <!-- 左侧面板 -->
+    <aside class="left-panel">
+      <div class="dataset-selector">
+        <label>▎数据集选择</label>
+        <select id="datasetSelect">
+          <option value="0">随机导入</option>
+        </select>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-import" onclick="stepImport()">📥 导入数据集</button>
+        <button class="btn btn-normal" id="btnQuality" onclick="stepQualityReport()" disabled>📊 数据质量报告</button>
+        <button class="btn btn-normal" id="btnTime" onclick="stepTimePreprocess()" disabled>⏰ 时间预处理</button>
+        <button class="btn btn-normal" id="btnMiss" onclick="highlightMiss()" disabled>🟢 缺失值处理</button>
+        <button class="btn btn-normal" id="btnDup" onclick="highlightDup()" disabled>🟠 重复值处理</button>
+        <button class="btn btn-normal" id="btnOutlier" onclick="highlightOutlier()" disabled>🔵 异常值处理</button>
+        <button class="btn btn-normal" id="btnNoise" onclick="stepNoiseFilter()" disabled>🌊 噪声滤波</button>
+        <button class="btn btn-normal" id="btnNorm" onclick="stepNormalize()" disabled>📐 归一化处理</button>
+        <button class="btn btn-export" id="btnExport" onclick="exportDataset()" disabled>💾 导出数据集</button>
+      </div>
+    </aside>
+
+    <!-- 中间表格区 -->
+    <section class="center-panel">
+      <div class="table-toolbar">
+        <div class="info">数据：<span id="tableInfo">未加载</span></div>
+        <button class="toggle-scroll" id="scrollBtn" onclick="toggleScroll()">⏸ 暂停滚动</button>
+      </div>
+      <div class="table-wrapper" id="tableWrapper">
+        <table id="dataTable"></table>
+      </div>
+    </section>
+
+    <!-- 右侧图表区 -->
+    <aside class="right-panel">
+      <h3>▎数据质量概览</h3>
+      <div class="chart-section">
+        <div class="chart-box" id="chartAbnormal">
+          <div class="placeholder">异常分布<br><small>导入数据后显示</small></div>
+          <canvas id="canvasAbnormal" style="display:none"></canvas>
+        </div>
+        <div class="chart-box" id="chartDetail">
+          <div class="placeholder">详细统计<br><small>点击功能按钮后显示</small></div>
+          <canvas id="canvasDetail" style="display:none"></canvas>
+        </div>
+        <div class="chart-box" id="chartNoise">
+          <div class="placeholder">噪声滤波对比<br><small>点击数据质量报告后显示</small></div>
+          <canvas id="canvasNoise" style="display:none"></canvas>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ===== 底部 ===== -->
+  <footer class="bottom-bar">
+    <span>博 科</span>
+  </footer>
+</div>
+
+<script>
+// ====== 全局状态 ======
+let currentDataset = null;
+let columns = [];
+let rowData = [];
+let abnormalPos = [];
+let missingPos = [];
+let duplicatePairs = [];
+let isScrolling = false;
+let scrollTimer = null;
+let highlightMode = 'none'; // 'dup' | 'miss' | 'outlier' | 'none'
+let chartInstances = { abnormal: null, detail: null, noise: null };
+// 流程步骤跟踪
+const STEP_FLAGS = {
+  imported: false,
+  qualityReportShown: false,
+  timePreprocessed: false,
+  missingProcessed: false,
+  dupProcessed: false,
+  outlierProcessed: false,
+  noiseFiltered: false,
+  normalized: false
+};
+
+// ====== 初始化数据集选择器 ======
+(function initSelector() {
+  const sel = document.getElementById('datasetSelect');
+  for (let i = 1; i <= 20; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `数据集 #${i}`;
+    sel.appendChild(opt);
+  }
+})();
+
+// ====== 加载数据集 ======
+async function stepImport() {
+  const sel = document.getElementById('datasetSelect');
+  let dsId = parseInt(sel.value);
+  if (dsId === 0) dsId = Math.floor(Math.random() * 20) + 1;
+  
+  document.getElementById('tableInfo').textContent = '加载中...';
+  console.log('importDataset: dsId=' + dsId);
+  
+  try {
+    const resp = await fetch('data/dataset_' + dsId + '.json');
+    if (!resp.ok) throw new Error('Fetch failed: ' + resp.status);
+    const data = await resp.json();
+    applyDataset(data);
+  } catch (e) {
+    console.log('Path1 failed, trying alternatives...');
+    for (const p of [`data/dataset_${dsId}.json`, `./data/dataset_${dsId}.json`]) {
+      try {
+        const resp2 = await fetch(p);
+        if (!resp2.ok) continue;
+        applyDataset(await resp2.json());
+        return;
+      } catch(e2) { console.log(p, 'failed:', e2.message); }
+    }
+    document.getElementById('tableInfo').textContent = '❌ 加载失败，请刷新重试';
+  }
+  
+  sel.value = dsId;
+}
+
+function applyDataset(data) {
+  currentDataset = data;
+  columns = data.columns;
+  rowData = data.data;
+  abnormalPos = data.meta.abnormal_positions || [];
+  missingPos = data.meta.missing_positions || [];
+  duplicatePairs = data.meta.duplicate_pairs || [];
+  
+  renderTable();
+  
+  // 导入完成，只启用数据质量报告
+  STEP_FLAGS.imported = true;
+  document.getElementById('btnQuality').disabled = false;
+  document.getElementById('tableInfo').textContent = data.rows + '行 × ' + data.cols + '列 | 数据集 #' + data.id + ' ✅';
+  
+  highlightMode = 'none';
+  
+  // 不显示图表 — 等点击"数据质量报告"再显示
+  
+  // 开始滚动
+  startScroll();
+}
+
+// ====== 渲染表格 ======
+function renderTable() {
+  const table = document.getElementById('dataTable');
+  table.innerHTML = '';
+  
+  // 表头
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  const idxTh = document.createElement('th');
+  idxTh.textContent = '行';
+  headRow.appendChild(idxTh);
+  
+  columns.forEach(col => {
+    const th = document.createElement('th');
+    th.textContent = col;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  
+  // 表体
+  const tbody = document.createElement('tbody');
+  
+  rowData.forEach((row, idx) => {
+    const tr = document.createElement('tr');
+    tr.dataset.rowIdx = idx;
+    
+    // 行号
+    const tdIdx = document.createElement('td');
+    tdIdx.textContent = idx;
+    tr.appendChild(tdIdx);
+    
+    row.values.forEach((val, colIdx) => {
+      const td = document.createElement('td');
+      
+      if (val === null || val === undefined || val === '') {
+        td.textContent = 'NaN';
+        // 缺失：初始标红 + 类型标记
+        td.classList.add('initial-anomaly', 'type-missing');
+      } else {
+        td.textContent = typeof val === 'number' ? val.toFixed(2) : val;
+      }
+      
+      // 异常值：初始标红 + 类型标记
+      if (isAbnormal(idx, colIdx)) {
+        td.classList.add('initial-anomaly', 'type-outlier');
+      }
+      
+      // 重复行：整个行初始标红
+      if (isDuplicateRow(idx)) {
+        tr.classList.add('initial-anomaly', 'type-dup');
+      }
+      
+      tr.appendChild(td);
+    });
+    
+    tbody.appendChild(tr);
+  });
+  
+  table.appendChild(tbody);
+}
+
+function isAbnormal(r, c) {
+  return abnormalPos.some(p => p[0] === r && p[1] === c);
+}
+function isMissing(r, c) {
+  return missingPos.some(p => p[0] === r && p[1] === c);
+}
+function isDuplicateRow(r) {
+  return duplicatePairs.some(p => p[1] === r);
+}
+
+// ====== 滚动控制 ======
+function startScroll() {
+  if (isScrolling) return;
+  isScrolling = true;
+  document.getElementById('scrollBtn').textContent = '⏸ 暂停滚动';
+  document.getElementById('scrollBtn').classList.add('running');
+  
+  const wrapper = document.getElementById('tableWrapper');
+  scrollTimer = setInterval(() => {
+    wrapper.scrollTop += 3;
+    if (wrapper.scrollTop >= wrapper.scrollHeight - wrapper.clientHeight) {
+      wrapper.scrollTop = 0;
+    }
+  }, 15); // 更快滚动
+}
+
+function stopScroll() {
+  isScrolling = false;
+  clearInterval(scrollTimer);
+  scrollTimer = null;
+  document.getElementById('scrollBtn').textContent = '▶ 开始滚动';
+  document.getElementById('scrollBtn').classList.remove('running');
+}
+
+function toggleScroll() {
+  if (isScrolling) stopScroll();
+  else startScroll();
+}
+
+// ====== 高亮功能 ======
+function highlightDup() {
+  highlightMode = 'dup';
+  
+  // 累积模式：只处理重复行，不清除其他标记
+  let minRow = Infinity;
+  const rows = document.querySelectorAll('#dataTable tbody tr');
+  rows.forEach((tr, idx) => {
+    if (isDuplicateRow(idx)) {
+      // 移除初始红色，换成橙色
+      tr.classList.remove('initial-anomaly');
+      tr.classList.add('duplicate-row');
+      tr.classList.add('highlighted');
+      minRow = Math.min(minRow, idx);
+    }
+  });
+  
+  // 定位到最小行序的重复行，同时水平滚动到第一个异常列
+  if (minRow < Infinity) {
+    const wrapper = document.getElementById('tableWrapper');
+    // 手动计算垂直位置：用行高 * 行号
+    const rowHeight = rows[0] ? rows[0].offsetHeight : 30;
+    wrapper.scrollTop = Math.max(0, minRow * rowHeight - wrapper.clientHeight / 2);
+    // 整行标记的重复行：定位到第1个数据列
+    const firstDataCell = rows[minRow].querySelector('td:nth-child(2)');
+    if (firstDataCell) {
+      wrapper.scrollLeft = firstDataCell.offsetLeft - 60;
+    }
+  }
+  
+  // 更新按钮状态
+  document.querySelectorAll('.btn-dup, .btn-miss, .btn-outlier').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnDup').classList.add('active');
+  
+  // 更新图表（已处理类别数量清零）
+  renderAbnormalChart('dup');
+  
+  STEP_FLAGS.dupProcessed = true;
+  document.getElementById('btnOutlier').disabled = false;
+  checkExportReady();
+  
+  // 暂停滚动（不自动恢复）
+  stopScroll();
+}
+
+function highlightMiss() {
+  highlightMode = 'miss';
+  
+  // 累积模式：只处理缺失单元格，不清除其他标记
+  let minRow = Infinity;
+  const rows = document.querySelectorAll('#dataTable tbody tr');
+  rows.forEach((tr, idx) => {
+    const tds = tr.querySelectorAll('td:not(:first-child)');
+    tds.forEach((td, colIdx) => {
+      if (isMissing(idx, colIdx)) {
+        // 移除初始红色，换成绿色
+        td.classList.remove('initial-anomaly');
+        td.classList.add('missing');
+        td.classList.add('highlighted');
+        minRow = Math.min(minRow, idx);
+      }
+    });
+  });
+  
+  // 定位到最小行序的缺失行，同时水平滚动到第一个缺失列
+  if (minRow < Infinity) {
+    const wrapper = document.getElementById('tableWrapper');
+    // 手动计算垂直位置
+    const rowHeight = rows[0] ? rows[0].offsetHeight : 30;
+    wrapper.scrollTop = Math.max(0, minRow * rowHeight - wrapper.clientHeight / 2);
+    // 找到该行第一个缺失单元格（用isMissing精确定位）
+    const tds = rows[minRow].querySelectorAll('td:not(:first-child)');
+    for (let ci = 0; ci < tds.length; ci++) {
+      if (isMissing(minRow, ci)) {
+        wrapper.scrollLeft = tds[ci].offsetLeft - 60;
+        break;
+      }
+    }
+  }
+  
+  document.querySelectorAll('.btn-dup, .btn-miss, .btn-outlier').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnMiss').classList.add('active');
+  
+  renderAbnormalChart('miss');
+  
+  STEP_FLAGS.missingProcessed = true;
+  document.getElementById('btnDup').disabled = false;
+  checkExportReady();
+  
+  stopScroll();
+}
+
+function highlightOutlier() {
+  highlightMode = 'outlier';
+  
+  // 累积模式：只处理异常单元格，不清除其他标记
+  let minRow = Infinity;
+  const rows = document.querySelectorAll('#dataTable tbody tr');
+  rows.forEach((tr, idx) => {
+    const tds = tr.querySelectorAll('td:not(:first-child)');
+    tds.forEach((td, colIdx) => {
+      if (isAbnormal(idx, colIdx)) {
+        // 移除初始红色，换成蓝色
+        td.classList.remove('initial-anomaly');
+        td.style.backgroundColor = 'rgba(59,130,246,0.25)';
+        td.classList.add('highlighted');
+        minRow = Math.min(minRow, idx);
+      }
+    });
+  });
+  
+  // 定位到最小行序的异常行，同时水平滚动到第一个异常列
+  if (minRow < Infinity) {
+    const wrapper = document.getElementById('tableWrapper');
+    // 手动计算垂直位置
+    const rowHeight = rows[0] ? rows[0].offsetHeight : 30;
+    wrapper.scrollTop = Math.max(0, minRow * rowHeight - wrapper.clientHeight / 2);
+    // 找到该行第一个异常单元格（用isAbnormal精确定位）
+    const tds = rows[minRow].querySelectorAll('td:not(:first-child)');
+    for (let ci = 0; ci < tds.length; ci++) {
+      if (isAbnormal(minRow, ci)) {
+        wrapper.scrollLeft = tds[ci].offsetLeft - 60;
+        break;
+      }
+    }
+  }
+  
+  document.querySelectorAll('.btn-dup, .btn-miss, .btn-outlier').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnOutlier').classList.add('active');
+  
+  renderAbnormalChart('outlier');
+  
+  STEP_FLAGS.outlierProcessed = true;
+  document.getElementById('btnNoise').disabled = false;
+  checkExportReady();
+  
+  stopScroll();
+}
+
+function clearHighlights() {
+  document.querySelectorAll('#dataTable tbody tr').forEach(tr => {
+    tr.style.backgroundColor = '';
+    tr.classList.remove('duplicate-row', 'highlighted');
+    // 恢复所有单元格的初始红色
+    tr.querySelectorAll('td').forEach(td => {
+      td.style.backgroundColor = '';
+      td.classList.remove('missing', 'highlighted');
+      // 如果是异常/缺失单元格，恢复 initial-anomaly
+      const rowIdx = parseInt(tr.dataset.rowIdx);
+      const colIdx = Array.from(td.parentNode.children).indexOf(td) - 1;
+      if (colIdx >= 0) {
+        if (isAbnormal(rowIdx, colIdx) || isMissing(rowIdx, colIdx)) {
+          td.classList.add('initial-anomaly');
+        }
+      }
+    });
+    // 恢复行的初始红色
+    const rowIdx = parseInt(tr.dataset.rowIdx);
+    if (isDuplicateRow(rowIdx)) {
+      tr.classList.add('initial-anomaly');
+    }
+  });
+  highlightMode = 'none';
+}
+
+// ====== 图表渲染 ======
+function renderAbnormalChart(type) {
+  // 统计各类异常数量
+  let counts = { abnormal: abnormalPos.length, missing: missingPos.length, duplicate: duplicatePairs.length };
+  // 已处理的计数（从DOM中统计）
+  let processedDup = document.querySelectorAll('#dataTable tbody tr.duplicate-row').length;
+  let processedMiss = document.querySelectorAll('#dataTable tbody td.missing').length;
+  let processedAbnormal = document.querySelectorAll('#dataTable tbody td[style*="background:rgba(59,130,246"]').length;
+  
+  // 总数 = 行数（1267）
+  const totalRows = rowData.length || 1267;
+  
+  // 根据type选择显示：已处理的类别数量清零（显示为已处理）
+  let labels, values, color;
+  switch(type) {
+    case 'dup':
+      // 重复已处理 → 数量清零只显示剩余未处理的
+      let remainingDup = counts.duplicate - processedDup;
+      labels = ['正常', '重复值(未处理)', '重复值(已处理)'];
+      values = [totalRows - counts.duplicate, Math.max(0, remainingDup), processedDup];
+      color = ['#2a3a5c', '#f59e0b', '#78716c'];
+      break;
+    case 'miss':
+      let remainingMiss = counts.missing - processedMiss;
+      labels = ['正常', '缺失值(未处理)', '缺失值(已处理)'];
+      values = [totalRows - counts.missing, Math.max(0, remainingMiss), processedMiss];
+      color = ['#2a3a5c', '#10b981', '#78716c'];
+      break;
+    case 'outlier':
+      let remainingOutlier = counts.abnormal - processedAbnormal;
+      labels = ['正常', '异常值(未处理)', '异常值(已处理)'];
+      values = [totalRows - counts.abnormal, Math.max(0, remainingOutlier), processedAbnormal];
+      color = ['#2a3a5c', '#3b82f6', '#78716c'];
+      break;
+    default:
+      // 初始状态：显示全部三类异常分区，占比均为 数量/1267
+      labels = ['重复值', '缺失值', '异常值', '正常'];
+      values = [counts.duplicate, counts.missing, counts.abnormal, totalRows - counts.duplicate - counts.missing - counts.abnormal];
+      color = ['#f59e0b', '#10b981', '#3b82f6', '#2a3a5c'];
+  }
+  
+  drawPie('canvasAbnormal', labels, values, color, totalRows);
+}
+
+function drawPie(canvasId, labels, values, colors, totalRows) {
+  const canvas = document.getElementById(canvasId);
+  const container = canvas.parentElement;
+  const placeholder = container.querySelector('.placeholder');
+  if (placeholder) placeholder.style.display = 'none';
+  canvas.style.display = 'block';
+  
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = container.getBoundingClientRect();
+  canvas.width = (rect.width - 16) * dpr;
+  canvas.height = (rect.height - 16) * dpr;
+  canvas.style.width = (rect.width - 16) + 'px';
+  canvas.style.height = (rect.height - 16) + 'px';
+  ctx.scale(dpr, dpr);
+  
+  const w = canvas.width / dpr;
+  const h = canvas.height / dpr;
+  const cx = w / 2;
+  const cy = h / 2;
+  const radius = Math.min(w, h) / 2 - 20;
+  
+  ctx.clearRect(0, 0, w, h);
+  
+  const total = totalRows || values.reduce((a, b) => a + b, 0) || 1;
+  let startAngle = -Math.PI / 2;
+  
+  values.forEach((val, i) => {
+    if (val === 0) return;
+    const angle = (val / total) * 2 * Math.PI;
+    const midAngle = startAngle + angle / 2;
+    const pct = (val / total * 100);
+    const displayPct = pct < 0.1 ? pct.toFixed(2) : pct.toFixed(1);
+    
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, startAngle, startAngle + angle);
+    ctx.closePath();
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+    
+    // 边框
+    ctx.strokeStyle = '#0d111d';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // 扇区上方标注 "数量(比例%)"
+    const labelRadius = radius * 0.65;
+    const labelX = cx + Math.cos(midAngle) * labelRadius;
+    const labelY = cy + Math.sin(midAngle) * labelRadius;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(val, labelX, labelY - 10);
+    ctx.font = '11px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillText(displayPct + '%', labelX, labelY + 8);
+    
+    startAngle += angle;
+  });
+  
+  // 中心文字
+  ctx.fillStyle = '#e0e8f0';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(total, cx, cy - 10);
+  ctx.fillStyle = '#64748b';
+  ctx.font = '11px sans-serif';
+  ctx.fillText('总行数', cx, cy + 8);
+  
+  // 图例（显示完整标签+数量+比例）
+  const legendY = h - 10;
+  let legendX = 10;
+  ctx.font = '11px sans-serif';
+  labels.forEach((label, i) => {
+    const pct = (values[i] / total * 100);
+    const pctStr = pct < 0.1 ? pct.toFixed(2) : pct.toFixed(1);
+    // 跳过比例为0的
+    if (values[i] === 0) return;
+    const text = `${label}: ${values[i]} (${pctStr}%)`;
+    ctx.fillStyle = colors[i];
+    ctx.fillRect(legendX, legendY - 5, 8, 8);
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, legendX + 12, legendY);
+    legendX += ctx.measureText(text).width + 20;
+  });
+}
+
+// ====== 数据质量报告 ======
+function stepQualityReport() {
+  STEP_FLAGS.qualityReportShown = true;
+  renderAbnormalChart('all');  // 显示饼图
+  drawNoiseSignal(false);      // 渲染噪声曲线（不含滤波叠加）
+  document.getElementById('btnTime').disabled = false;
+  
+  // 按钮激活状态
+  document.querySelectorAll('.btn-normal').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnQuality').classList.add('active');
+}
+
+// ====== 噪声滤波 ======
+function stepNoiseFilter() {
+  STEP_FLAGS.noiseFiltered = true;
+  drawNoiseSignal(true);  // 显示滤波叠加曲线
+  document.getElementById('btnNorm').disabled = false;
+  checkExportReady();
+  
+  document.querySelectorAll('.btn-normal').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnNoise').classList.add('active');
+}
+
+// ====== 检查导出条件 ======
+function checkExportReady() {
+  const ready = STEP_FLAGS.timePreprocessed &&
+                STEP_FLAGS.missingProcessed &&
+                STEP_FLAGS.dupProcessed &&
+                STEP_FLAGS.outlierProcessed &&
+                STEP_FLAGS.noiseFiltered &&
+                STEP_FLAGS.normalized;
+  document.getElementById('btnExport').disabled = !ready;
+}
+
+// ====== 噪声信号图表 ======
+let noiseSignalData = { raw: null, filtered: null, filteredShown: false };
+
+function drawNoiseSignal(showFiltered) {
+  const canvas = document.getElementById('canvasNoise');
+  const container = document.getElementById('chartNoise');
+  if (!canvas || !container) return;
+  const placeholder = container.querySelector('.placeholder');
+  if (placeholder) placeholder.style.display = 'none';
+  canvas.style.display = 'block';
+  
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = container.getBoundingClientRect();
+  canvas.width = (rect.width - 16) * dpr;
+  canvas.height = (rect.height - 16) * dpr;
+  canvas.style.width = (rect.width - 16) + 'px';
+  canvas.style.height = (rect.height - 16) + 'px';
+  ctx.scale(dpr, dpr);
+  
+  const w = canvas.width / dpr;
+  const h = canvas.height / dpr;
+  const padding = { top: 30, bottom: 25, left: 40, right: 20 };
+  const plotW = w - padding.left - padding.right;
+  const plotH = h - padding.top - padding.bottom;
+  
+  // 生成数据（含噪正弦波）
+  const N = 200;
+  if (!noiseSignalData.raw) {
+    const raw = [];
+    for (let i = 0; i < N; i++) {
+      const x = (i / N) * 4 * Math.PI;
+      const noise = (Math.random() - 0.5) * 1.5;
+      raw.push({ x: i, y: Math.sin(x) + noise });
+    }
+    noiseSignalData.raw = raw;
+    
+    // 生成滤波后（移动平均）
+    const filtered = raw.map((p, i) => {
+      const windowSize = 8;
+      let sum = 0, count = 0;
+      for (let j = -windowSize; j <= windowSize; j++) {
+        const idx = i + j;
+        if (idx >= 0 && idx < raw.length) { sum += raw[idx].y; count++; }
+      }
+      return { x: p.x, y: sum / count };
+    });
+    noiseSignalData.filtered = filtered;
+  }
+  
+  ctx.clearRect(0, 0, w, h);
+  
+  // 背景网格
+  ctx.strokeStyle = 'rgba(30,58,95,0.5)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = padding.top + (plotH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(w - padding.right, y); ctx.stroke();
+  }
+  
+  function mapX(i) { return padding.left + (i / (N - 1)) * plotW; }
+  function mapY(y) {
+    const yMin = -1.5, yMax = 1.5;
+    return padding.top + (1 - (y - yMin) / (yMax - yMin)) * plotH;
+  }
+  
+  // 原始含噪信号（半透明灰色）
+  ctx.strokeStyle = 'rgba(148,163,184,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  noiseSignalData.raw.forEach((p, i) => {
+    const px = mapX(i); const py = mapY(p.y);
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  });
+  ctx.stroke();
+  
+  // 图例: 原始
+  ctx.fillStyle = 'rgba(148,163,184,0.8)';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillRect(padding.left + 5, padding.top + 5, 12, 2);
+  ctx.fillText('含噪信号', padding.left + 20, padding.top + 9);
+  
+  // 标题
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'center';
+  
+  if (showFiltered) {
+    noiseSignalData.filteredShown = true;
+    // 滤波后曲线（青色叠加）
+    ctx.strokeStyle = '#22d3ee';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    noiseSignalData.filtered.forEach((p, i) => {
+      const px = mapX(i); const py = mapY(p.y);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+    
+    // 图例: 滤波后
+    ctx.fillStyle = '#22d3ee';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillRect(padding.left + 130, padding.top + 5, 12, 2.5);
+    ctx.fillText('滤波后信号', padding.left + 145, padding.top + 9);
+    
+    ctx.fillText('移动平均滤波 (窗口=17) — 已处理', w / 2, padding.top - 8);
+  } else {
+    ctx.fillText('含噪声正弦信号 (点击「噪声滤波」查看处理效果)', w / 2, padding.top - 8);
+  }
+  
+  // Y轴
+  ctx.fillStyle = '#64748b';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  [-1.5, -0.75, 0, 0.75, 1.5].forEach((v, i) => {
+    ctx.fillText(v.toFixed(1), padding.left - 5, padding.top + (plotH / 4) * i);
+  });
+  
+  // X轴
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('样本点', w / 2, h - 5);
+}
+
+// ====== 时间预处理 ======
+function stepTimePreprocess() {
+  if (!currentDataset || !rowData.length) return;
+  if (STEP_FLAGS.timePreprocessed) {
+    alert('时间预处理已完成');
+    return;
+  }
+  
+  // 只处理第一列 (Col_00)，检测是否为时间戳
+  const ci = 0;
+  const vals = rowData.map(r => r.values[ci]).filter(v => v !== null && v !== undefined);
+  if (vals.length === 0) {
+    alert('第一列无数据，无法处理');
+    return;
+  }
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+  if (avg < 1e8 || avg > 2e12) {
+    alert('第一列不是时间戳数据（平均值范围应为1e8~2e12），跳过此步骤');
+    STEP_FLAGS.timePreprocessed = true;
+    checkExportReady();
+    return;
+  }
+  
+  // 转换：整数时间戳 → 格式化日期字符串
+  columns[ci] = columns[ci] + ' (时间)';
+  rowData.forEach(row => {
+    const val = row.values[ci];
+    if (val === null || val === undefined) return;
+    const ts = val > 1e12 ? Math.floor(val / 1000) : Math.floor(val);
+    const d = new Date(ts * 1000);
+    if (!isNaN(d.getTime())) {
+      const fmt = d.getFullYear() + '-' +
+        String(d.getMonth()+1).padStart(2,'0') + '-' +
+        String(d.getDate()).padStart(2,'0') + ' ' +
+        String(d.getHours()).padStart(2,'0') + ':' +
+        String(d.getMinutes()).padStart(2,'0') + ':' +
+        String(d.getSeconds()).padStart(2,'0');
+      row.values[ci] = fmt;
+    }
+  });
+  
+  STEP_FLAGS.timePreprocessed = true;
+  renderTable();
+  checkExportReady();
+  
+  document.getElementById('btnMiss').disabled = false;
+  
+  document.querySelectorAll('.btn-normal').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnTime').classList.add('active');
+  
+  document.getElementById('tableInfo').textContent += ' | ⏰ 时间已转换';
+}
+
+// ====== 归一化处理 ======
+function stepNormalize() {
+  if (!currentDataset || !rowData.length) return;
+  if (STEP_FLAGS.normalized) {
+    alert('归一化已完成');
+    return;
+  }
+  
+  // 选择两列相邻数据列：Col_02 和 Col_03（示例展示不同量级归一化）
+  const normCols = [2, 3];
+  let infoText = '归一化处理:\n';
+  
+  normCols.forEach(ci => {
+    const name = columns[ci];
+    const vals = rowData.map(r => r.values[ci]).filter(v => typeof v === 'number' && !isNaN(v));
+    if (vals.length === 0) {
+      infoText += name + ': 无有效数值，跳过\n';
+      return;
+    }
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const range = max - min;
+    if (range === 0) {
+      infoText += name + ': 所有值相同，跳过\n';
+      return;
+    }
+    columns[ci] = name + ' (归一化)';
+    infoText += name + ': [' + min.toFixed(2) + ' ~ ' + max.toFixed(2) + '] → [0, 1]\n';
+    rowData.forEach(row => {
+      const v = row.values[ci];
+      if (typeof v === 'number' && !isNaN(v)) {
+        row.values[ci] = parseFloat(((v - min) / range).toFixed(6));
+      }
+    });
+  });
+  
+  STEP_FLAGS.normalized = true;
+  renderTable();
+  checkExportReady();
+  
+  // 表格滚动到最左侧，显示 Col_02 和 Col_03 归一化列
+  const wrapper = document.getElementById('tableWrapper');
+  if (wrapper) {
+    const headerCells = document.querySelectorAll('#dataTable thead th');
+    // th[0]=行号, th[1]=Col_00, th[2]=Col_01, th[3]=Col_02(归一化)
+    if (headerCells.length >= 4) {
+      wrapper.scrollLeft = headerCells[2].offsetLeft - 20;
+    }
+  }
+  
+  document.querySelectorAll('.btn-normal').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnNorm').classList.add('active');
+  
+  document.getElementById('tableInfo').textContent += ' | 📐 已归一化 (两列)';
+  console.log(infoText);
+}
+
+// ====== 导出 ======// ====== 导出 ======
+function exportDataset() {
+  if (document.getElementById('btnExport').disabled) {
+    alert('⚠️ 请先完成所有前置步骤后再导出');
+    return;
+  }
+  
+  // 构建导出数据
+  const exportData = {
+    id: currentDataset.id,
+    columns: columns,
+    rows: rowData.length,
+    cols: columns.length,
+    data: rowData.map((row, idx) => ({
+      index: idx,
+      values: row.values
+    })),
+    processed: {
+      missing: STEP_FLAGS.missingProcessed,
+      duplicate: STEP_FLAGS.dupProcessed,
+      outlier: STEP_FLAGS.outlierProcessed,
+      noiseFilter: STEP_FLAGS.noiseFiltered,
+      normalize: STEP_FLAGS.normalized,
+      timePreprocess: STEP_FLAGS.timePreprocessed
+    }
+  };
+  
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'dataset_' + currentDataset.id + '_processed.json';
+  link.click();
+  URL.revokeObjectURL(link);
+  
+  alert('✅ 数据集已导出为 ' + link.download);
+}
+
+// ====== 窗口大小变化重绘图表 ======
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (STEP_FLAGS.qualityReportShown) {
+      renderAbnormalChart('all');
+      drawNoiseSignal(noiseSignalData.filteredShown);
+    }
+  }, 300);
+});
+</script>
+</body>
+</html>
